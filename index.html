@@ -150,36 +150,6 @@ body { display:flex; flex-direction:column; height:100vh; }
   /* Marker panel: wider, readable */
   .marker-panel { max-width:calc(100vw - 24px); font-size:12px; line-height:1.6; }
 
-  /* Alarm: fullscreen overlay on mobile */
-  #alarm {
-    position:fixed; left:0; top:0;
-    width:100vw; height:100vh;
-    object-fit:cover;
-    pointer-events:none;
-    cursor:default;
-    display:block;
-    opacity:0; filter:none;
-    transition:opacity .3s;
-    z-index:500;
-  }
-  #alarm.muted { opacity:0; }
-  #alarm:not(.muted) { opacity:1; }
-
-  /* Toggle button — fixed so blend-mode layer can't swallow it */
-  #alarm-toggle {
-    display:flex; align-items:center; justify-content:center;
-    position:fixed; top:10px; right:10px; z-index:2000;
-    width:48px; height:48px;
-    background:rgba(10,10,26,0.8); border:1px solid #550000;
-    font-size:24px; cursor:pointer; touch-action:manipulation;
-    transition:border-color .15s, background .15s;
-    transform:translateZ(0);
-  }
-  #alarm-toggle.active {
-    border-color:#dd0000;
-    background:rgba(80,0,0,0.8);
-    box-shadow:0 0 16px rgba(220,0,0,0.5);
-  }
 }
 
 /* ── ALARM VIDEO ─── */
@@ -196,7 +166,6 @@ body { display:flex; flex-direction:column; height:100vh; }
 }
 #alarm.muted { opacity: 0.3; filter: grayscale(1); }
 
-#alarm-toggle { display: none; }
 
 /* ── LEAFLET ─── */
 .marker-panel {
@@ -232,10 +201,9 @@ body { display:flex; flex-direction:column; height:100vh; }
 <div id="map-wrap">
   <div id="map"></div>
 
-  <video id="alarm" autoplay muted loop playsinline class="muted">
+  <video id="alarm" autoplay muted loop playsinline title="click to toggle siren" class="muted">
     <source src="alarm.webm" type="video/webm"/>
   </video>
-  <div id="alarm-toggle" title="toggle siren">🚨</div>
   <audio id="siren" loop>
     <source src="siren.mp3" type="audio/mpeg"/>
   </audio>
@@ -429,28 +397,23 @@ map.on('move zoom', () => {
 
 buildStrip();
 
-// Siren toggle
-const sirenAudio  = document.getElementById('siren');
-const alarmVid    = document.getElementById('alarm');
-const alarmToggle = document.getElementById('alarm-toggle');
+// Siren toggle — click alarm video
+const sirenAudio = document.getElementById('siren');
+const alarmVid   = document.getElementById('alarm');
 let sirenOn = false;
 
-function toggleSiren() {
+alarmVid.addEventListener('click', () => {
   if (sirenOn) {
-    sirenAudio.pause(); sirenAudio.currentTime = 0;
+    sirenAudio.pause();
+    sirenAudio.currentTime = 0;
     alarmVid.classList.add('muted');
-    alarmToggle.classList.remove('active');
     sirenOn = false;
   } else {
     sirenAudio.play().catch(()=>{});
     alarmVid.classList.remove('muted');
-    alarmToggle.classList.add('active');
     sirenOn = true;
   }
-}
-
-alarmVid.addEventListener('click', toggleSiren);     // desktop: click video
-alarmToggle.addEventListener('click', toggleSiren);  // mobile: click button
+});
 </script>
 </body>
 </html>
